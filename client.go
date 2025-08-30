@@ -6,13 +6,13 @@ package mdns
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
 	"strings"
 	"sync/atomic"
 	"time"
 
 	"github.com/miekg/dns"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
 )
@@ -49,7 +49,7 @@ type QueryParam struct {
 	WantUnicastResponse bool                 // Unicast response desired, as per 5.4 in RFC
 	DisableIPv4         bool                 // Whether to disable usage of IPv4 for MDNS operations. Does not affect discovered addresses.
 	DisableIPv6         bool                 // Whether to disable usage of IPv6 for MDNS operations. Does not affect discovered addresses.
-	Logger              *log.Logger          // Optionally provide a *log.Logger to better manage log output.
+	Logger              *logrus.Logger       // Optionally provide a *logrus.Logger to better manage log output.
 }
 
 // DefaultParams is used to return a default set of QueryParam's
@@ -80,7 +80,7 @@ func Query(params *QueryParam) error {
 // on cancellation.
 func QueryContext(ctx context.Context, params *QueryParam) error {
 	if params.Logger == nil {
-		params.Logger = log.Default()
+		params.Logger = logrus.New()
 	}
 	// Create a new client
 	client, err := newClient(!params.DisableIPv4, !params.DisableIPv6, params.Logger)
@@ -139,12 +139,12 @@ type client struct {
 	closed   int32
 	closedCh chan struct{} // TODO(reddaly): This doesn't appear to be used.
 
-	log *log.Logger
+	log *logrus.Logger
 }
 
 // NewClient creates a new mdns Client that can be used to query
 // for records
-func newClient(v4 bool, v6 bool, logger *log.Logger) (*client, error) {
+func newClient(v4 bool, v6 bool, logger *logrus.Logger) (*client, error) {
 	if !v4 && !v6 {
 		return nil, fmt.Errorf("Must enable at least one of IPv4 and IPv6 querying")
 	}

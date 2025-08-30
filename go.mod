@@ -4,6 +4,7 @@ go 1.23.0
 
 require (
 	github.com/miekg/dns v1.1.68
+	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/net v0.43.0
 )
 
